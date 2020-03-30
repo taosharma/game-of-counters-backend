@@ -1,20 +1,29 @@
 const express = require("express");
 const cors = require("cors");
+
 const PORT = 5000;
 
 const app = express();
+const server = require("http").createServer(app);
+const io = require("socket.io")(server);
 
 const counterRouter = require("./routes/counter");
 
-app.use((request, response, next) => {
-  console.log(`${request.method} request received to ${request.url}`);
-  next();
-});
+let counter = 0;
 
 app.use(cors());
 
 app.use(express.json());
 
+io.on("connection", function(socket) {
+  socket.emit("counter", counter);
+  socket.on("increment counter", function(data) {
+    console.log("hello");
+    counter++;
+    io.emit("counter", counter);
+  });
+});
+
 app.use("/counter", counterRouter);
 
-app.listen(PORT, () => console.log(`listening on PORT ${PORT}`));
+server.listen(PORT, () => console.log(`listening on PORT ${PORT}`));
